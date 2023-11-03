@@ -90,7 +90,6 @@ public struct BuildURLRequestMacro: ExpressionMacro {
                     case "method":
                         methodExpression = CodeBlockItemSyntax(item: .expr("result.httpMethod = \(tupleExprElementSyntax.expression)"))
                     case "headers":
-                        // Create an inline dictionary then iterate over it?
                         headersStatements = CodeBlockItemSyntax(item: .decl("let headers: [String:String] = \(tupleExprElementSyntax.expression)"))
                     default:
                         break
