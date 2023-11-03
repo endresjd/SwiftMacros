@@ -21,29 +21,37 @@ import SwiftSyntaxMacros
 import SwiftDiagnostics
 import Foundation
 
+/// Diagnostic information for this macro.
 private enum BuildURLRequestMacroDiagnostic: String, DiagnosticMessage {
-    case variable
+    /// Raised if the macro detects no string (parameter 1) was given to it.
+    case missingString
     
+    /// Severity of this diagnostic
     var severity: DiagnosticSeverity {
         switch self {
-        case .variable:
+        case .missingString:
             return .error
         }
     }
     
+    /// User visibile message for a given case.
     var message: String {
         switch self {
-        case .variable:
-            return "Must be attached to an URL variable"
+        case .missingString:
+            return "Missing URL string"
         }
     }
     
+    /// Identifies the diagnostic comes from our domain
     var diagnosticID: MessageID {
         MessageID(domain: "MacPluginsMacros", id: rawValue)
     }
 }
 
+/// Expands out information into an expression that resolves into an URLRequest
 public struct BuildURLRequestMacro: ExpressionMacro {
+    /// Expand a macro described by the given freestanding macro expansion
+    /// within the given context to produce an instance of an URLRequest.
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
@@ -54,7 +62,7 @@ public struct BuildURLRequestMacro: ExpressionMacro {
             // I don't see a way to get here.  The macro definition requires this field in its
             // signature and will cause a compile error before the macro is called.  This raises
             // a diagnostic just in case.
-            context.diagnose(Diagnostic(node: node, message: BuildURLRequestMacroDiagnostic.variable))
+            context.diagnose(Diagnostic(node: node, message: BuildURLRequestMacroDiagnostic.missingString))
             
             return ""
         }
