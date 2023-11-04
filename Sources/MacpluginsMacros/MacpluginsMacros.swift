@@ -19,4 +19,4 @@ import Foundation
 /// - Returns: A fully construct URLRequest or nil if the URL could not be created
 /// - Important: Using this multiple times at the top level, like in a command-line tool, will expand them all properly, but only the first expansion seems used.
 @freestanding(expression)
-public macro buildURLRequest(_ string: String, method: String = "GET", headers: [String:String] = [:]) -> URLRequest? = #externalMacro(module: "MacpluginsMacros", type: "BuildURLRequestMacro")
+public macro buildURLRequest(_ string: String, method: String = "GET", headers: [String:String] = [:]) -> URLRequest? = #externalMacro(module: "MacpluginsMacrosCore", type: "BuildURLRequestMacro")
