@@ -18,8 +18,8 @@ import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import XCTest
 
-#if canImport(MacpluginsMacros)
-import MacpluginsMacros
+#if canImport(MacpluginsMacrosCore)
+import MacpluginsMacrosCore
 #endif
 
 final class BuildURLRequestMacroTests: XCTestCase {

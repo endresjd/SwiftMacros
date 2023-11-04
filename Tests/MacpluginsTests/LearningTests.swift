@@ -46,7 +46,7 @@ private enum LearningMacroDiagnostic: String, DiagnosticMessage {
     }
     
     var diagnosticID: MessageID {
-        MessageID(domain: "MacPluginsMacros", id: rawValue)
+        MessageID(domain: "MacpluginsMacrosImplementation", id: rawValue)
     }
 }
 
