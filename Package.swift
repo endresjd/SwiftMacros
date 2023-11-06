@@ -15,7 +15,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "MacpluginsSwiftMacros",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+    platforms: [.macOS(.v11), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -47,7 +47,12 @@ let package = Package(
         .target(name: "MacpluginsMacros", dependencies: ["MacpluginsMacrosCore"]),
 
         // A client of the library, which is able to use the macro in its own code.
-        .executableTarget(name: "MacpluginsMacrosClient", dependencies: ["MacpluginsMacros"]),
+        .executableTarget(
+            name: "MacpluginsMacrosClient",
+            dependencies: [
+                "MacpluginsMacros",
+            ]
+        ),
 
         // A test target used to develop the macro implementation.
         .testTarget(
