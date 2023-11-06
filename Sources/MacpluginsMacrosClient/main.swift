@@ -8,7 +8,8 @@
 //
 
 import Foundation
-import Macplugins
+import os
+import MacpluginsMacros
 
 // This is either a bug or my blatant misunderstanding on how they are used in this case.  All #buildURLRequest
 // defined at the top level of code (not in a function) result in unique expansions, but they all end up
@@ -61,3 +62,32 @@ func buildRequestExample() {
 print()
 buildRequestExample()
 print()
+
+// Good overview: https://www.avanderlee.com/debugging/oslog-unified-logging/
+@OSLogger
+@OSLogger("otherLogger", category: "Other")
+@OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
+struct ExampleStruct {
+    func example() {
+        logger.debug("a debug message")
+    }
+    
+    func other() {
+        otherLogger.debug("other debug message")
+    }
+    
+    func exampleWithMore(_ more: String) {
+        logger.info("a debug message \(more, privacy: .private)")
+    }
+    
+    func fullExample() {
+        fullLogger.notice("Message from fullLogger")
+    }
+}
+
+let example = ExampleStruct()
+
+example.example()
+example.exampleWithMore("Private message")
+example.other()
+example.fullExample()

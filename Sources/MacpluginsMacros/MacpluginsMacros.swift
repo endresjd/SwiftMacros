@@ -20,3 +20,12 @@ import Foundation
 /// - Important: Using this multiple times at the top level, like in a command-line tool, will expand them all properly, but only the first expansion seems used.
 @freestanding(expression)
 public macro buildURLRequest(_ string: String, method: String = "GET", headers: [String:String] = [:]) -> URLRequest? = #externalMacro(module: "MacpluginsMacrosCore", type: "BuildURLRequestMacro")
+
+/// Adds a logger instance to the class or struct this is attached to with it's subsytem set to the bundle identifier, if known, and this category as the type name.
+/// Both of those can be overridded with the parameters
+/// - Parameters:
+///   - loggerName: The name for this logger instance.  The default is "logger"
+///   - subsystem: The logger's subsystem.  If it can be determined, this defaults to the bundle identifer, Uknown if can't be determined, or the value passed in
+///   - category: The logger's category.  Defaults to the name of the class or struct it is attached to.
+@attached(member, names: named(log(issue:)), arbitrary)
+public macro OSLogger(_ loggerName: String = "logger", subsystem: String? = nil, category: String? = nil) = #externalMacro(module: "MacpluginsMacrosCore", type: "OSLoggerMacro")
