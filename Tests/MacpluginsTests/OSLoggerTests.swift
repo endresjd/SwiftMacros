@@ -24,7 +24,7 @@ final class OSLoggerTests: XCTestCase {
     func testWrongType() {
         assertMacroExpansion(
             """
-            @OSLogger
+            @OSLogger(subsystem: "Client")
             enum John {
             case one
             }
@@ -62,14 +62,14 @@ final class OSLoggerTests: XCTestCase {
     func testOnlyVariableName() throws {
         assertMacroExpansion(
             """
-            @OSLogger("variablename")
+            @OSLogger("variablename", subsystem: "Macplugins")
             class Foo {
             }
             """,
             expandedSource: """
             class Foo {
             
-                private let variablename = Logger(subsystem: "com.apple.dt.xctest.tool", category: "Foo")
+                private let variablename = Logger(subsystem: "Macplugins", category: "Foo")
             }
             """,
             macros: ["OSLogger": OSLoggerMacro.self]
@@ -79,16 +79,100 @@ final class OSLoggerTests: XCTestCase {
     func testDefault() throws {
         assertMacroExpansion(
             """
-            @OSLogger
+            @OSLogger(subsystem: "Macplugins")
             class Foo {
             }
             """,
             expandedSource: """
             class Foo {
             
-                private let logger = Logger(subsystem: "com.apple.dt.xctest.tool", category: "Foo")
+                private let logger = Logger(subsystem: "Macplugins", category: "Foo")
             }
             """,
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+    }
+    
+    func testUnquotedValues() throws {
+        assertMacroExpansion(
+            """
+            @OSLogger(subsystem: Bundle.main.bundleIdentifier!)
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            class Foo {
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "subsystem must be a non-empty quoted string", line: 1, column: 1)
+            ],
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+    }
+    
+    func testEmpty() throws {
+        assertMacroExpansion(
+            """
+            @OSLogger("")
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            class Foo {
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "loggerName must be a non-empty quoted string", line: 1, column: 1)
+            ],
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+
+        assertMacroExpansion(
+            """
+            @OSLogger
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            class Foo {
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "subsystem must be a non-empty quoted string", line: 1, column: 1)
+            ],
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+
+        assertMacroExpansion(
+            """
+            @OSLogger(subsystem: "")
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            class Foo {
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "subsystem must be a non-empty quoted string", line: 1, column: 1)
+            ],
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+
+        assertMacroExpansion(
+            """
+            @OSLogger(subsystem: "Client", category: "")
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            class Foo {
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "category must be a non-empty quoted string", line: 1, column: 1)
+            ],
             macros: ["OSLogger": OSLoggerMacro.self]
         )
     }

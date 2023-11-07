@@ -43,24 +43,15 @@ The added properties require an added import: `import os` at the top of your fil
 
 	import os
 	
-	@OSLogger
-	@OSLogger("otherLogger", category: "Other")
-	@OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
-	struct ExampleStruct {
-	    func example() {
-	        logger.debug("a debug message")
-	    }
-	    
-	    func other() {
-	        otherLogger.debug("other debug message")
-	    }
-	    
-	    func exampleWithMore(_ more: String) {
-	        logger.info("a debug message \(more, privacy: .private)")
-	    }
-	    
-	    func fullExample() {
-	        fullLogger.notice("Message from fullLogger")
-	    }
-	}
-
+    @OSLogger(subsystem: "Client")
+    @OSLogger("categoryLogger", subsystem: "Client", category: "Other")
+    @OSLogger("subsystemLogger", subsystem: "subsystem")
+    @OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
+    struct ExampleStruct {
+        func example(_ message: String) {
+            logger.debug("a debug message")
+            categoryLogger.debug("categoryLogger debug message")
+            subsystemLogger.info("a subsystem message: \(message, privacy: .private)")
+            fullLogger.notice("Notice from fullLogger")
+        }
+    }
