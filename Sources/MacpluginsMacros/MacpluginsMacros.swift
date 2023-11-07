@@ -17,7 +17,8 @@ import Foundation
 ///   - string: String representation of the URL
 ///   - method: A value to assign to the request's httpMethod property.  Defaults to "GET"
 ///   - headers: Dictionary of string key/value pairs that are set (not added!) in the request using URLRequest's setValue(_:forHTTPHeaderField:) method.  The default is an empty dictionary
-/// - Returns: A fully construct URLRequest or nil if the URL could not be created
+///   - Returns: A fully construct URLRequest or nil if the URL could not be created
+///
 /// - Important: Using this multiple times at the top level, like in a command-line tool, will expand them all properly, but only the first expansion seems used.
 ///
 /// ## Examples
@@ -62,6 +63,8 @@ public macro buildURLRequest(_ string: String, method: String = "GET", headers: 
 ///   - subsystem: The logger's subsystem.  If it can be determined, this defaults to the bundle identifer, Uknown if can't be determined, or the value passed in
 ///   - category: The logger's category.  Defaults to the name of the class or struct it is attached to.
 ///
+/// - Important: You must `import os` in your swift file for this to compile properly.
+///
 /// This is a shortcut to getting a Logger instance setup that is tied to the current bundle and struct/class the macro is attached to with individual overrides for those if you
 /// need more than one.
 ///
@@ -71,6 +74,8 @@ public macro buildURLRequest(_ string: String, method: String = "GET", headers: 
 /// up in Xcode's console or the System's console depending on how the code is being run.
 ///
 /// ```swift
+/// import os
+///
 /// @OSLogger
 /// @OSLogger("categoryLogger", category: "Other")
 /// @OSLogger("subsystemLogger", subsystem: "subsystem")
