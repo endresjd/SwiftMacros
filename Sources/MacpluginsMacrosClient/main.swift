@@ -20,9 +20,9 @@ if let thisIsUsedEverywhereAtTopLevel = #buildURLRequest("https://www.macplugins
     print("result headers: \(thisIsUsedEverywhereAtTopLevel.allHTTPHeaderFields ?? [:])")
 }
 
-if let requestOne = #buildURLRequest("https://www.apple.com") {
-    print("requestOne: \(requestOne)")
-    print("requestOne.httpMethod: \(requestOne.httpMethod ?? "GET")")
+if let request = #buildURLRequest("https://www.apple.com") {
+    print("requestOne: \(request)")
+    print("requestOne.httpMethod: \(request.httpMethod ?? "GET")")
 }
 
 if let request = #buildURLRequest("https://www.apple.com", method: "PUT") {
@@ -64,30 +64,20 @@ buildRequestExample()
 print()
 
 // Good overview: https://www.avanderlee.com/debugging/oslog-unified-logging/
+// And here: https://developer.apple.com/documentation/xcode/formatting-your-documentation
 @OSLogger
-@OSLogger("otherLogger", category: "Other")
+@OSLogger("categoryLogger", category: "Other")
+@OSLogger("subsystemLogger", subsystem: "subsystem")
 @OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
 struct ExampleStruct {
-    func example() {
+    func example(_ message: String) {
         logger.debug("a debug message")
-    }
-    
-    func other() {
-        otherLogger.debug("other debug message")
-    }
-    
-    func exampleWithMore(_ more: String) {
-        logger.info("a debug message \(more, privacy: .private)")
-    }
-    
-    func fullExample() {
-        fullLogger.notice("Message from fullLogger")
+        categoryLogger.debug("categoryLogger debug message")
+        subsystemLogger.info("a subsystem message: \(message, privacy: .private)")
+        fullLogger.notice("Notice from fullLogger")
     }
 }
 
 let example = ExampleStruct()
 
-example.example()
-example.exampleWithMore("Private message")
-example.other()
-example.fullExample()
+example.example("subsystem message")

@@ -8,7 +8,6 @@ Macros defined:
 
 # **Usage**
 
-
 ## buildURLRequest
 ### Create a GET request with no headers
 
