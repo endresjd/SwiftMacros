@@ -35,9 +35,14 @@ Macros defined:
 
 ## OSLogger
 
-This shows a struct with three loggers attached that show some of the ways to use it.  All of the parameters are not required.  The methods defined in this struct are using the loggers
-that were added by the 3 attached macros.
+This shows a struct with three loggers attached that show some of the ways to use it.  All of the parameters are not required.  The methods defined in this struct are using the loggers that were added by the 3 attached macros.
 
+**IMPORTANT**
+
+The added properties require an added import: `import os` at the top of your file.  Otherwise you will get a compilation error.
+
+	import os
+	
 	@OSLogger
 	@OSLogger("otherLogger", category: "Other")
 	@OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
