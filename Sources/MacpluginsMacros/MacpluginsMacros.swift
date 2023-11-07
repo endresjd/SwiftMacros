@@ -55,18 +55,15 @@ import Foundation
 @freestanding(expression)
 public macro buildURLRequest(_ string: String, method: String = "GET", headers: [String:String] = [:]) -> URLRequest? = #externalMacro(module: "MacpluginsMacrosCore", type: "BuildURLRequestMacro")
 
-/// Adds a logger instance to the class or struct this is attached to with it's subsytem set to the bundle identifier, if known, and this category as the type name.
+/// Adds a logger instance to the class or struct this is attached to with it's subsytem set to the given value, and the category as the type name it is attached to.
 /// Both of those can be overridded with the parameters
 ///
 /// - Parameters:
 ///   - loggerName: The name for this logger instance.  The default is "logger"
-///   - subsystem: The logger's subsystem.  If it can be determined, this defaults to the bundle identifer, Uknown if can't be determined, or the value passed in
+///   - subsystem: The logger's subsystem.  Required.
 ///   - category: The logger's category.  Defaults to the name of the class or struct it is attached to.
 ///
 /// - Important: You must `import os` in your swift file for this to compile properly.
-///
-/// This is a shortcut to getting a Logger instance setup that is tied to the current bundle and struct/class the macro is attached to with individual overrides for those if you
-/// need more than one.
 ///
 /// ## Examples
 ///
@@ -76,8 +73,8 @@ public macro buildURLRequest(_ string: String, method: String = "GET", headers: 
 /// ```swift
 /// import os
 ///
-/// @OSLogger
-/// @OSLogger("categoryLogger", category: "Other")
+/// @OSLogger(subsystem: "Client")
+/// @OSLogger("categoryLogger", subsystem: "Client", category: "Other")
 /// @OSLogger("subsystemLogger", subsystem: "subsystem")
 /// @OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
 /// struct ExampleStruct {
@@ -94,4 +91,4 @@ public macro buildURLRequest(_ string: String, method: String = "GET", headers: 
 /// example.example("subsystem message")
 /// ```
 @attached(member, names: arbitrary)
-public macro OSLogger(_ loggerName: String = "logger", subsystem: String? = nil, category: String? = nil) = #externalMacro(module: "MacpluginsMacrosCore", type: "OSLoggerMacro")
+public macro OSLogger(_ loggerName: String = "logger", subsystem: String, category: String? = nil) = #externalMacro(module: "MacpluginsMacrosCore", type: "OSLoggerMacro")

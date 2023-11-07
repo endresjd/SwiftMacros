@@ -44,7 +44,7 @@ private enum BuildURLRequestMacroDiagnostic: String, DiagnosticMessage {
     
     /// Identifies the diagnostic comes from our domain
     var diagnosticID: MessageID {
-        MessageID(domain: "MacpluginsMacrosImplementation", id: rawValue)
+        MessageID(domain: "MacpluginsMacros", id: rawValue)
     }
 }
 

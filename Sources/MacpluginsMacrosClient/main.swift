@@ -65,8 +65,8 @@ print()
 
 // Good overview: https://www.avanderlee.com/debugging/oslog-unified-logging/
 // And here: https://developer.apple.com/documentation/xcode/formatting-your-documentation
-@OSLogger
-@OSLogger("categoryLogger", category: "Other")
+@OSLogger(subsystem: "Client")
+@OSLogger("categoryLogger", subsystem: "Client", category: "Other")
 @OSLogger("subsystemLogger", subsystem: "subsystem")
 @OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
 struct ExampleStruct {
