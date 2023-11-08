@@ -127,6 +127,24 @@ final class OSLoggerTests: XCTestCase {
         )
     }
     
+    func testLearning() throws {
+        assertMacroExpansion(
+            """
+            @OSLogger(subsystem: "")
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            class Foo {
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "Unspupported value for subsystem", line: 1, column: 1)
+            ],
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+    }
+    
     func testVariableExpansion() throws {
         assertMacroExpansion(
             """
@@ -215,7 +233,7 @@ final class OSLoggerTests: XCTestCase {
             }
             """,
             diagnostics: [
-                DiagnosticSpec(message: "subsystem must be a non-empty quoted string", line: 1, column: 1)
+                DiagnosticSpec(message: "Unspupported value for subsystem", line: 1, column: 1)
             ],
             macros: ["OSLogger": OSLoggerMacro.self]
         )
@@ -231,7 +249,7 @@ final class OSLoggerTests: XCTestCase {
             }
             """,
             diagnostics: [
-                DiagnosticSpec(message: "category must be a non-empty quoted string", line: 1, column: 1)
+                DiagnosticSpec(message: "Unspupported value for category", line: 1, column: 1)
             ],
             macros: ["OSLogger": OSLoggerMacro.self]
         )

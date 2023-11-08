@@ -35,33 +35,58 @@ if let request = #buildURLRequest("a b c", method: "DELETE") {
     print("request.httpMethod: \(request.httpMethod ?? "GET")")
 }
 
-func buildRequestExample() {
-    if let request = #buildURLRequest("https://www.macplugins.com", method: "POST", headers: ["one":"two", "three":"four"]) {
-        print("request: \(request)")
-        print("request.httpMethod: \(request.httpMethod ?? "GET")")
-        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
-    }
+//func buildRequestExample() {
+//    if let request = #buildURLRequest("https://www.macplugins.com", method: "POST", headers: ["one":"two", "three":"four"]) {
+//        print("request: \(request)")
+//        print("request.httpMethod: \(request.httpMethod ?? "GET")")
+//        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
+//    }
+//
+//    print()
+//    
+//    if let request = #buildURLRequest("https://www.apple.com", method: "PUT") {
+//        print("request: \(request)")
+//        print("request.httpMethod: \(request.httpMethod ?? "GET")")
+//        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
+//    }
+//
+//    print()
+//    
+//    if let request = #buildURLRequest("https://www.google.com") {
+//        print("request: \(request)")
+//        print("request.httpMethod: \(request.httpMethod ?? "GET")")
+//        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
+//    }
+//}
+//
+//print()
+//buildRequestExample()
+//print()
 
-    print()
+@OSLogger(subsystem: "MacpluginsMacrosClient")
+struct RequestExample {
+    let postRequest = #buildURLRequest("https://www.macplugins.com", method: "POST", headers: ["one":"two", "three":"four"])
+    let putRequest = #buildURLRequest("https://www.apple.com", method: "PUT")
+    let getRequest = #buildURLRequest("https://www.google.com")
     
-    if let request = #buildURLRequest("https://www.apple.com", method: "PUT") {
-        print("request: \(request)")
-        print("request.httpMethod: \(request.httpMethod ?? "GET")")
-        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
+    func run() {
+        log(postRequest)
+        log(putRequest)
+        log(getRequest)
     }
-
-    print()
     
-    if let request = #buildURLRequest("https://www.google.com") {
-        print("request: \(request)")
-        print("request.httpMethod: \(request.httpMethod ?? "GET")")
-        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
+    func log(_ request: URLRequest?) {
+        if let request {
+            logger.info("request: \(request)")
+            logger.info("request.httpMethod: \(request.httpMethod ?? "GET")")
+            logger.info("request headers: \(request.allHTTPHeaderFields ?? [:])")
+        }
     }
 }
 
-print()
-buildRequestExample()
-print()
+let requestExample = RequestExample()
+
+requestExample.run()
 
 // Good overview: https://www.avanderlee.com/debugging/oslog-unified-logging/
 // And here: https://developer.apple.com/documentation/xcode/formatting-your-documentation
