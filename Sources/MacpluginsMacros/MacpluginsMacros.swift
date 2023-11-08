@@ -55,12 +55,12 @@ import Foundation
 @freestanding(expression)
 public macro buildURLRequest(_ string: String, method: String = "GET", headers: [String:String] = [:]) -> URLRequest? = #externalMacro(module: "MacpluginsMacrosCore", type: "BuildURLRequestMacro")
 
-/// Adds a logger instance to the class or struct this is attached to with it's subsytem set to the given value, and the category as the type name it is attached to.
-/// Both of those can be overridded with the parameters
+/// Adds a logger instance to the class or struct this is attached to with it's subsytem set to the given value or the current bundle identifier,
+/// and the category as the type name it is attached to.
 ///
 /// - Parameters:
-///   - loggerName: The name for this logger instance.  The default is "logger"
-///   - subsystem: The logger's subsystem.  Required.
+///   - loggerName: The name for this logger instance which must be a double-quoted string.  The default is "logger".
+///   - subsystem: The logger's subsystem.  Defaults to the bundle identifier or "Unknown" if that can't be resolved.  Command-line tools will likely be "Unknown"
 ///   - category: The logger's category.  Defaults to the name of the class or struct it is attached to.
 ///
 /// - Important: You must `import os` in your swift file for this to compile properly.
@@ -73,13 +73,18 @@ public macro buildURLRequest(_ string: String, method: String = "GET", headers: 
 /// ```swift
 /// import os
 ///
-/// @OSLogger(subsystem: "Client")
+/// let subsystem = "ClientSubsystem"
+/// let category = "ClientCategory"
+///
+/// @OSLogger
+/// @OSLogger("clientLogger", subsystem: subsystem, category: category)
 /// @OSLogger("categoryLogger", subsystem: "Client", category: "Other")
 /// @OSLogger("subsystemLogger", subsystem: "subsystem")
 /// @OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
 /// struct ExampleStruct {
 ///     func example(_ message: String) {
 ///         logger.debug("a debug message")
+///         clientLogger.error("CLIENT LOGGER!")
 ///         categoryLogger.debug("categoryLogger debug message")
 ///         subsystemLogger.info("a subsystem message: \(message, privacy: .private)")
 ///         fullLogger.notice("Notice from fullLogger")
@@ -91,4 +96,4 @@ public macro buildURLRequest(_ string: String, method: String = "GET", headers: 
 /// example.example("subsystem message")
 /// ```
 @attached(member, names: arbitrary)
-public macro OSLogger(_ loggerName: String = "logger", subsystem: String, category: String? = nil) = #externalMacro(module: "MacpluginsMacrosCore", type: "OSLoggerMacro")
+public macro OSLogger(_ loggerName: String = "logger", subsystem: String? = nil, category: String? = nil) = #externalMacro(module: "MacpluginsMacrosCore", type: "OSLoggerMacro")

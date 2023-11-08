@@ -65,13 +65,18 @@ print()
 
 // Good overview: https://www.avanderlee.com/debugging/oslog-unified-logging/
 // And here: https://developer.apple.com/documentation/xcode/formatting-your-documentation
-@OSLogger(subsystem: "Client")
+let subsystem = "ClientSubsystem"
+let category = "ClientCategory"
+
+@OSLogger
+@OSLogger("clientLogger", subsystem: subsystem, category: category)
 @OSLogger("categoryLogger", subsystem: "Client", category: "Other")
 @OSLogger("subsystemLogger", subsystem: "subsystem")
 @OSLogger("fullLogger", subsystem: "Example sub-system", category: "example category")
 struct ExampleStruct {
     func example(_ message: String) {
         logger.debug("a debug message")
+        clientLogger.error("CLIENT LOGGER!")
         categoryLogger.debug("categoryLogger debug message")
         subsystemLogger.info("a subsystem message: \(message, privacy: .private)")
         fullLogger.notice("Notice from fullLogger")
