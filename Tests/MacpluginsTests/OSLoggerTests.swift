@@ -93,7 +93,7 @@ final class OSLoggerTests: XCTestCase {
         )
     }
     
-    func testUnquotedValues() throws {
+    func testUnquotedSubsystem() throws {
         assertMacroExpansion(
             """
             @OSLogger(subsystem: Bundle.main.bundleIdentifier!)
@@ -102,11 +102,72 @@ final class OSLoggerTests: XCTestCase {
             """,
             expandedSource: """
             class Foo {
+            
+                private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Foo")
+            }
+            """,
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+    }
+    
+    func testBundleDefault() throws {
+        assertMacroExpansion(
+            """
+            @OSLogger
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            class Foo {
+            
+                private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Unknown", category: "Foo")
+            }
+            """,
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+    }
+    
+    func testVariableExpansion() throws {
+        assertMacroExpansion(
+            """
+            let loggerName = "loggerNameVal"
+            let subsystem = "subsystemVal"
+            let category = "categoryVal"
+            
+            @OSLogger(loggerName, subsystem: subsystem, category: category)
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            let loggerName = "loggerNameVal"
+            let subsystem = "subsystemVal"
+            let category = "categoryVal"
+            class Foo {
             }
             """,
             diagnostics: [
-                DiagnosticSpec(message: "subsystem must be a non-empty quoted string", line: 1, column: 1)
+                DiagnosticSpec(message: "loggerName must be a non-empty quoted string", line: 5, column: 1)
             ],
+            macros: ["OSLogger": OSLoggerMacro.self]
+        )
+
+        assertMacroExpansion(
+            """
+            let subsystem = "subsystemVal"
+            let category = "categoryVal"
+            
+            @OSLogger("loggerName", subsystem: subsystem, category: category)
+            class Foo {
+            }
+            """,
+            expandedSource: """
+            let subsystem = "subsystemVal"
+            let category = "categoryVal"
+            class Foo {
+            
+                private let loggerName = Logger(subsystem: subsystem, category: category)
+            }
+            """,
             macros: ["OSLogger": OSLoggerMacro.self]
         )
     }
@@ -136,11 +197,10 @@ final class OSLoggerTests: XCTestCase {
             """,
             expandedSource: """
             class Foo {
+
+                private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Unknown", category: "Foo")
             }
             """,
-            diagnostics: [
-                DiagnosticSpec(message: "subsystem must be a non-empty quoted string", line: 1, column: 1)
-            ],
             macros: ["OSLogger": OSLoggerMacro.self]
         )
 

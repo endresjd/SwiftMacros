@@ -100,7 +100,9 @@ public struct OSLoggerMacro: MemberMacro {
         
         // Subsystem to use for the logger if we don't have a bundle identifier.
         // Can be further overridden by parameters
-        var subsystem = ""
+        var subsystem = #"Bundle.main.bundleIdentifier ?? "Unknown""#
+        
+        subsystem = "\(subsystem)"
         
         // Category that can be further overridden
         var category = "\"\(typeName.text)\""
@@ -119,7 +121,7 @@ public struct OSLoggerMacro: MemberMacro {
             }
         }
         
-        guard verifyString(variableName) else {
+        guard verifyString(variableName, requiresQuotes: true) else {
             context.diagnose(Diagnostic(node: node, message: OSLoggerDiagnostic.badLoggerNameValue))
 
             return []
@@ -147,8 +149,11 @@ public struct OSLoggerMacro: MemberMacro {
     /// Verifies we have a properly quoted string passed in
     /// - Parameter string: string to check
     /// - Returns: true if it is good, false if it is not
-    static func verifyString(_ string: String) -> Bool {
-        // Must be a double quoted value, so minimum is "x", or count of 3
-        return string.count > 3 && string.hasPrefix("\"") && string.hasSuffix("\"")
+    static func verifyString(_ string: String, requiresQuotes: Bool = false) -> Bool {
+        if requiresQuotes {
+            return string.count > 3 && string.hasPrefix("\"") && string.hasSuffix("\"")
+        } else {
+            return !string.filter { $0 != "\"" }.isEmpty
+        }
     }
 }
