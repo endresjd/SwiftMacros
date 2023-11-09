@@ -24,12 +24,12 @@ import Foundation
 /// Diagnostic information for this macro.
 private enum BuildURLRequestMacroDiagnostic: String, DiagnosticMessage {
     /// Raised if the macro detects no string (parameter 1) was given to it.
-    case missingString
+    case invalideURLString
     
     /// Severity of this diagnostic
     var severity: DiagnosticSeverity {
         switch self {
-        case .missingString:
+        case .invalideURLString:
             return .error
         }
     }
@@ -37,8 +37,8 @@ private enum BuildURLRequestMacroDiagnostic: String, DiagnosticMessage {
     /// User visibile message for a given case.
     var message: String {
         switch self {
-        case .missingString:
-            return "Missing URL string"
+        case .invalideURLString:
+            return "Value for URL is invalid"
         }
     }
     
@@ -56,20 +56,28 @@ public struct BuildURLRequestMacro: ExpressionMacro {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
-        // Get the first parameter, the one with no label, the one that has the label ignored in the
-        // declaration of the macro.
-        guard let value = node.argumentList.first(where: { $0.label == nil })?.expression else {
-            // I don't see a way to get here.  The macro definition requires this field in its
-            // signature and will cause a compile error before the macro is called.  This raises
-            // a diagnostic just in case.
-            context.diagnose(Diagnostic(node: node, message: BuildURLRequestMacroDiagnostic.missingString))
+        // Extract out the first parameter
+        var result: String?
+        
+        if let expression = node.argumentList.firstUnlabeled?.expression {
+            if let declarationLiteral = expression.as(DeclReferenceExprSyntax.self) {
+                result = "\(declarationLiteral)"
+            } else if let stringLiteral = expression.as(StringLiteralExprSyntax.self),
+                      stringLiteral.trimmedLength.utf8Length > 2 {
+                result = "\(stringLiteral)"
+            }
+        }
+        
+        // Verify we have that parameter
+        guard let finalValue = result else {
+            context.diagnose(Diagnostic(node: node, message: BuildURLRequestMacroDiagnostic.invalideURLString))
             
-            return ""
+            return "nil as URLRequest?"
         }
         
         // First line of the code block being returned.  Define the URL that will be used in the request
         let urlStatement = CodeBlockItemSyntax(item: .stmt("""
-                guard let url = URL(string: \(raw: value)) else {
+                guard let url = URL(string: \(raw: finalValue)) else {
                     return nil
                 }
                 """)
