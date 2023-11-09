@@ -49,7 +49,57 @@ final class BuildURLRequestMacroTests: XCTestCase {
         )
     }
     
-    func testVariableValue() throws {
+    func testVariableHeadersValue() throws {
+        assertMacroExpansion(
+            """
+            let headers = ["one":"two", "three":"four"]
+            let result = #buildURLRequest("https://www.apple.com", headers: headers)
+            """,
+            expandedSource: """
+            let headers = ["one":"two", "three":"four"]
+            let result = {
+                guard let url = URL(string: "https://www.apple.com") else {
+                    return nil
+                }
+                var result = URLRequest(url: url)
+                result.httpMethod = "GET"
+                let headers: [String: String] = headers
+                for (header, value) in headers {
+                    result.setValue(value, forHTTPHeaderField: header)
+                }
+                return result
+            }()
+            """,
+            macros: ["buildURLRequest": BuildURLRequestMacro.self]
+        )
+    }
+    
+    func testVariableMethodValue() throws {
+        assertMacroExpansion(
+            """
+            let method = "GET"
+            let result = #buildURLRequest("https://www.apple.com", method: method)
+            """,
+            expandedSource: """
+            let method = "GET"
+            let result = {
+                guard let url = URL(string: "https://www.apple.com") else {
+                    return nil
+                }
+                var result = URLRequest(url: url)
+                result.httpMethod = method
+                let headers: [String: String] = [:]
+                for (header, value) in headers {
+                    result.setValue(value, forHTTPHeaderField: header)
+                }
+                return result
+            }()
+            """,
+            macros: ["buildURLRequest": BuildURLRequestMacro.self]
+        )
+    }
+    
+    func testVariableURLValue() throws {
         assertMacroExpansion(
             """
             let value = "https://www.apple.com"
@@ -108,6 +158,21 @@ final class BuildURLRequestMacroTests: XCTestCase {
                 return result
             }()
             """,
+            macros: ["buildURLRequest": BuildURLRequestMacro.self]
+        )
+    }
+    
+    func testEmptyMethod() throws {
+        assertMacroExpansion(
+            """
+            let result = #buildURLRequest("https://www.apple.com", method: "")
+            """,
+            expandedSource: """
+            let result = nil as URLRequest?
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "Could not parse method parameter", line: 1, column: 14)
+            ],
             macros: ["buildURLRequest": BuildURLRequestMacro.self]
         )
     }

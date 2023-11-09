@@ -50,6 +50,14 @@ func buildRequestExample() {
     if let request = #buildURLRequest("https://www.google.com") {
         dumpURLRequest(request)
     }
+    
+    let url = "https://www.johndoe.com"
+    let method = "GET"
+    let headers = ["first":"John", "last":"Doe"]
+
+    if let request = #buildURLRequest(url, method: method, headers: headers) {
+        dumpURLRequest(request)
+    }
 }
 
 buildRequestExample()

@@ -26,10 +26,16 @@ private enum BuildURLRequestMacroDiagnostic: String, DiagnosticMessage {
     /// Raised if the macro detects no string (parameter 1) was given to it.
     case invalideURLString
     
+    /// If there were problems parsing out the ethod
+    case invalidMethodString
+    
+    /// The headers value is invalid
+    case invalidHeaders
+    
     /// Severity of this diagnostic
     var severity: DiagnosticSeverity {
         switch self {
-        case .invalideURLString:
+        case .invalideURLString, .invalidMethodString, .invalidHeaders:
             return .error
         }
     }
@@ -39,6 +45,10 @@ private enum BuildURLRequestMacroDiagnostic: String, DiagnosticMessage {
         switch self {
         case .invalideURLString:
             return "Value for URL is invalid"
+        case .invalidMethodString:
+            return "Could not parse method parameter"
+        case .invalidHeaders:
+            return "Could not parse headers parameter"
         }
     }
     
@@ -65,6 +75,8 @@ public struct BuildURLRequestMacro: ExpressionMacro {
             } else if let stringLiteral = expression.as(StringLiteralExprSyntax.self),
                       stringLiteral.trimmedLength.utf8Length > 2 {
                 result = "\(stringLiteral)"
+            } else {
+                result = nil
             }
         }
         
@@ -86,32 +98,59 @@ public struct BuildURLRequestMacro: ExpressionMacro {
         // Create the request here after making the URL instance
         let urlRequestDeclaration = CodeBlockItemSyntax(item: .decl("var result = URLRequest(url: url)"))
         
-        // Default values for the optional macro parameters.  They don't seem to be passed
-        // of, more likely, I don't see how to get them yet, so default to what is in the macro
-        // definition.
-        var methodExpression = CodeBlockItemSyntax(item: .expr(#"result.httpMethod = "GET""#))
-        var headersStatements = CodeBlockItemSyntax(item: .decl("let headers: [String:String] = [:]"))
+        // Will hold the method statement
+        let methodExpression: CodeBlockItemSyntax
         
-        // Iterate through all the parameters with explicit names.  In this case for this macro
-        // these will be the optional parameters "method" and "headers".  Replace the defaults
-        // from above with real values.
-        node
-            .argumentList
-            .filter {
-                $0.label != nil
+        // Will hold the headers statement
+        let headersStatements: CodeBlockItemSyntax
+        
+        // Get the method
+        if let expression = node.argumentList.first(labeled: "method")?.expression {
+            let result: String?
+            
+            if let declarationLiteral = expression.as(DeclReferenceExprSyntax.self) {
+                result = "\(declarationLiteral)"
+            } else if let stringLiteral = expression.as(StringLiteralExprSyntax.self),
+                      stringLiteral.trimmedLength.utf8Length > 2 {
+                result = "\(stringLiteral)"
+            } else {
+                result = nil
             }
-            .forEach { tupleExprElementSyntax in
-                if let parameter = tupleExprElementSyntax.label?.text {
-                    switch parameter {
-                    case "method":
-                        methodExpression = CodeBlockItemSyntax(item: .expr("result.httpMethod = \(tupleExprElementSyntax.expression)"))
-                    case "headers":
-                        headersStatements = CodeBlockItemSyntax(item: .decl("let headers: [String:String] = \(tupleExprElementSyntax.expression)"))
-                    default:
-                        break
-                    }
-                }
+            
+            guard let method = result else {
+                context.diagnose(Diagnostic(node: node, message: BuildURLRequestMacroDiagnostic.invalidMethodString))
+                
+                return "nil as URLRequest?"
             }
+            
+            methodExpression = CodeBlockItemSyntax(item: .expr("result.httpMethod = \(raw: method)"))
+        } else {
+            methodExpression = CodeBlockItemSyntax(item: .expr(#"result.httpMethod = "GET""#))
+        }
+
+        if let expression = node.argumentList.first(labeled: "headers")?.expression {
+            let result: String?
+
+            if let declarationLiteral = expression.as(DeclReferenceExprSyntax.self) {
+                result = "\(declarationLiteral)"
+            } else if let dictionaryElement = expression.as(DictionaryElementListSyntax.self) {
+                result = "\(dictionaryElement)"
+            } else if let dictionaryElement = expression.as(DictionaryExprSyntax.self) {
+                result = "\(dictionaryElement)"
+            } else {
+                result = nil
+            }
+            
+            guard let headers = result else {
+                context.diagnose(Diagnostic(node: node, message: BuildURLRequestMacroDiagnostic.invalidHeaders))
+                
+                return "nil as URLRequest?"
+            }
+            
+            headersStatements = CodeBlockItemSyntax(item: .decl("let headers: [String:String] = \(raw: headers)"))
+        } else {
+            headersStatements = CodeBlockItemSyntax(item: .decl("let headers: [String:String] = [:]"))
+        }
         
         // Block of code that assigns the header values into the request.
         let headerAssignmentStatement = CodeBlockItemSyntax(item: .stmt("""

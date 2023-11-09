@@ -52,6 +52,16 @@ import Foundation
 /// }
 /// ```
 ///
+/// ### Using variable inputs
+///
+/// ```swift
+/// let url = "https://www.johndoe.com"
+/// let method = "GET"
+/// let headers = ["first":"John", "last":"Doe"]
+///
+/// if let request = #buildURLRequest(url, method: method, headers: headers) {
+/// }
+/// ```
 @freestanding(expression)
 public macro buildURLRequest(_ string: String, method: String = "GET", headers: [String:String] = [:]) -> URLRequest? = #externalMacro(module: "MacpluginsMacrosCore", type: "BuildURLRequestMacro")
 
