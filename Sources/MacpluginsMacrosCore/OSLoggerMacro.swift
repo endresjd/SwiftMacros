@@ -50,9 +50,9 @@ private enum OSLoggerDiagnostic: String, DiagnosticMessage {
         case .badLoggerNameValue:
             return "loggerName must be a non-empty quoted string"
         case .badSubsystemValue:
-            return "subsystem must be a non-empty quoted string"
+            return "Unspupported value for subsystem"
         case .badCategoryValue:
-            return "category must be a non-empty quoted string"
+            return "Unspupported value for category"
         }
     }
     
@@ -95,65 +95,81 @@ public struct OSLoggerMacro: MemberMacro {
             return []
         }
 
-        // Name to use for the logger variable
-        var variableName = "\"logger\""
+        // Default name to use for the logger variable
+        var variableName = "logger"
         
-        // Subsystem to use for the logger if we don't have a bundle identifier.
-        // Can be further overridden by parameters
+        // Default subsystem name.  Try to use Bundle.main.bundleIdentifier
         var subsystem = #"Bundle.main.bundleIdentifier ?? "Unknown""#
         
-        subsystem = "\(subsystem)"
-        
-        // Category that can be further overridden
+        // Default category name
         var category = "\"\(typeName.text)\""
 
+        // Parse out the arguments
+        // Declarations (DeclReferenceExprSyntax) in the argument list would be variables passed in
+        // Strings (StringLiteralExprSyntax) in the argument list would be a hard-coded string
         // This will be an array of LabeledExprListSyntax
         if case let .argumentList(arguments) = node.arguments {
-            for argument in arguments {
-                switch argument.label?.text {
-                case "subsystem":
-                    subsystem = argument.expression.trimmedDescription
-                case "category":
-                    category = argument.expression.trimmedDescription
-                default:
-                    variableName = argument.expression.trimmedDescription
+            // Verify variable name is a string, and it is populated
+            if let variableNameArg = arguments.firstUnlabeled {
+                if let stringLiteral = variableNameArg.expression.as(StringLiteralExprSyntax.self),
+                   stringLiteral.segments.count == 1,
+                   case let .stringSegment(variableNameString) = stringLiteral.segments.first,
+                   !variableNameString.trimmedDescription.filter({ $0 != "\"" }).isEmpty {
+                    variableName = variableNameString.trimmedDescription
+                } else {
+                    context.diagnose(Diagnostic(node: node, message: OSLoggerDiagnostic.badLoggerNameValue))
+                    
+                    return []
+                }
+            }
+            
+            if let argument = arguments.first(labeled: "subsystem") {
+                if let result = getLabeledArgumentValue(for: argument) {
+                    subsystem = result
+                } else {
+                    context.diagnose(Diagnostic(node: node, message: OSLoggerDiagnostic.badSubsystemValue))
+                    
+                    return []
+                }
+            }
+            
+            if let argument = arguments.first(labeled: "category") {
+                if let result = getLabeledArgumentValue(for: argument) {
+                    category = result
+                } else {
+                    context.diagnose(Diagnostic(node: node, message: OSLoggerDiagnostic.badCategoryValue))
+                    
+                    return []
                 }
             }
         }
         
-        guard verifyString(variableName, requiresQuotes: true) else {
-            context.diagnose(Diagnostic(node: node, message: OSLoggerDiagnostic.badLoggerNameValue))
-
-            return []
-        }
-        
-        guard verifyString(subsystem) else {
-            context.diagnose(Diagnostic(node: node, message: OSLoggerDiagnostic.badSubsystemValue))
-
-            return []
-        }
-
-        guard verifyString(category) else {
-            context.diagnose(Diagnostic(node: node, message: OSLoggerDiagnostic.badCategoryValue))
-
-            return []
-        }
-        
         return [
             """
-            private let \(raw: variableName.filter { $0 != "\"" }) = Logger(subsystem: \(raw: subsystem), category: \(raw: category))
+            private let \(raw: variableName) = Logger(subsystem: \(raw: subsystem), category: \(raw: category))
             """
         ]
     }
     
-    /// Verifies we have a properly quoted string passed in
-    /// - Parameter string: string to check
-    /// - Returns: true if it is good, false if it is not
-    static func verifyString(_ string: String, requiresQuotes: Bool = false) -> Bool {
-        if requiresQuotes {
-            return string.count > 3 && string.hasPrefix("\"") && string.hasSuffix("\"")
+    /// Takes the element and breaks it down into the 3 we expect -- Declaration, String, or an expression
+    /// and if it is one of those, return the value for that argument.  Part of this is checking that there is
+    /// a value in those strings as well.
+    /// - Parameter argument: the element to examine
+    /// - Returns: string value for that element or nil if they type of the element is wrong
+    static func getLabeledArgumentValue(for argument: LabeledExprListSyntax.Element) -> String? {
+        let result: String
+        
+        if let declarationLiteral = argument.expression.as(DeclReferenceExprSyntax.self) {
+            result = declarationLiteral.trimmedDescription
+        } else if let stringLiteral = argument.expression.as(StringLiteralExprSyntax.self) {
+            result = stringLiteral.trimmedDescription
+        } else if let memberAccessExpression = argument.expression.as(ExprSyntax.self) {
+            result = memberAccessExpression.trimmedDescription
         } else {
-            return !string.filter { $0 != "\"" }.isEmpty
+            return nil
         }
+        
+        // We need to make sure the value return is not empty or just an empty string literal
+        return result.filter { $0 != "\"" }.isEmpty ? nil : result
     }
 }

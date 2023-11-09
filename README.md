@@ -33,6 +33,16 @@ Macros defined:
         print("request headers: \(request.allHTTPHeaderFields ?? [:])")
     }
 
+### Create using runtime values
+
+    let url = "https://www.johndoe.com"
+    let method = "GET"
+    let headers = ["first":"John", "last":"Doe"]
+
+    if let request = #buildURLRequest(url, method: method, headers: headers) {
+        dumpURLRequest(request)
+    }
+    
 ## OSLogger
 
 This shows a struct with three loggers attached that show some of the ways to use it.  All of the parameters are not required.  The method defined in this struct are using the loggers that were added by the attached macros.  The default subsystem used here is the current bundleidentifier for the target if it can be determine.

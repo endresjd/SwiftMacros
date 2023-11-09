@@ -11,57 +11,81 @@ import Foundation
 import os
 import MacpluginsMacros
 
+let logger = Logger(subsystem: "MacPluginsMacrosClient", category: "top-level")
+
+func dumpURLRequest(_ request: URLRequest) {
+    logger.debug("result: \(request)")
+    logger.debug("result.httpMethod: \(request.httpMethod ?? "GET")")
+    logger.debug("result headers: \(request.allHTTPHeaderFields ?? [:])")
+}
+
 // This is either a bug or my blatant misunderstanding on how they are used in this case.  All #buildURLRequest
 // defined at the top level of code (not in a function) result in unique expansions, but they all end up
 // using only the values from the first one (this one)
 if let thisIsUsedEverywhereAtTopLevel = #buildURLRequest("https://www.macplugins.com", method: "DELETE", headers: ["one":"two", "three":"four"]) {
-    print("result: \(thisIsUsedEverywhereAtTopLevel)")
-    print("result.httpMethod: \(thisIsUsedEverywhereAtTopLevel.httpMethod ?? "GET")")
-    print("result headers: \(thisIsUsedEverywhereAtTopLevel.allHTTPHeaderFields ?? [:])")
+    dumpURLRequest(thisIsUsedEverywhereAtTopLevel)
 }
 
 if let request = #buildURLRequest("https://www.apple.com") {
-    print("requestOne: \(request)")
-    print("requestOne.httpMethod: \(request.httpMethod ?? "GET")")
+    dumpURLRequest(request)
 }
 
 if let request = #buildURLRequest("https://www.apple.com", method: "PUT") {
-    print("request: \(request)")
-    print("request.httpMethod: \(request.httpMethod ?? "GET")")
+    dumpURLRequest(request)
 }
 
 if let request = #buildURLRequest("a b c", method: "DELETE") {
-    print("request: \(request)")
-    print("request.httpMethod: \(request.httpMethod ?? "GET")")
+    dumpURLRequest(request)
 }
 
 func buildRequestExample() {
     if let request = #buildURLRequest("https://www.macplugins.com", method: "POST", headers: ["one":"two", "three":"four"]) {
-        print("request: \(request)")
-        print("request.httpMethod: \(request.httpMethod ?? "GET")")
-        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
+        dumpURLRequest(request)
     }
 
-    print()
-    
     if let request = #buildURLRequest("https://www.apple.com", method: "PUT") {
-        print("request: \(request)")
-        print("request.httpMethod: \(request.httpMethod ?? "GET")")
-        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
+        dumpURLRequest(request)
     }
 
-    print()
-    
     if let request = #buildURLRequest("https://www.google.com") {
-        print("request: \(request)")
-        print("request.httpMethod: \(request.httpMethod ?? "GET")")
-        print("request headers: \(request.allHTTPHeaderFields ?? [:])")
+        dumpURLRequest(request)
+    }
+    
+    let url = "https://www.johndoe.com"
+    let method = "GET"
+    let headers = ["first":"John", "last":"Doe"]
+
+    if let request = #buildURLRequest(url, method: method, headers: headers) {
+        dumpURLRequest(request)
     }
 }
 
-print()
 buildRequestExample()
-print()
+
+@OSLogger(subsystem: "MacpluginsMacrosClient")
+struct RequestExample {
+    let postRequest = #buildURLRequest("https://www.macplugins.com", method: "POST", headers: ["one":"two", "three":"four"])
+    let putRequest = #buildURLRequest("https://www.apple.com", method: "PUT")
+    let getRequest = #buildURLRequest("https://www.google.com")
+    
+    func run() {
+        log(postRequest)
+        log(putRequest)
+        log(getRequest)
+    }
+    
+    func log(_ request: URLRequest?) {
+        if let request {
+            logger.info("request: \(request)")
+            logger.info("request.httpMethod: \(request.httpMethod ?? "GET")")
+            logger.info("request headers: \(request.allHTTPHeaderFields ?? [:])")
+        }
+    }
+}
+
+let requestExample = RequestExample()
+
+requestExample.run()
 
 // Good overview: https://www.avanderlee.com/debugging/oslog-unified-logging/
 // And here: https://developer.apple.com/documentation/xcode/formatting-your-documentation
