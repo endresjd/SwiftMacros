@@ -106,4 +106,30 @@ public macro buildURLRequest(_ string: String, method: String = "GET", headers: 
 /// example.example("subsystem message")
 /// ```
 @attached(member, names: arbitrary)
-public macro OSLogger(_ loggerName: String = "logger", subsystem: String? = nil, category: String? = nil) = #externalMacro(module: "MacpluginsMacrosCore", type: "OSLoggerMacro")
+public macro OSLogger(_ loggerName: String = "logger", subsystem: String? = nil, category: String? = nil) = #externalMacro(
+    module: "MacpluginsMacrosCore",
+    type: "OSLoggerMacro"
+)
+
+/// Adds an extension to a type so that that type conforms to Equatable
+///
+/// A shortcut for Equatable protocol conformance
+///
+///     @Equatable
+///     struct SomeStruct {
+///         var property: Int
+///     }
+///
+/// Produces
+///
+///     struct SomeStruct {
+///         var property: Int
+///     }
+///     extension SomeStruct: Equatable {
+///     }
+@attached(extension, conformances: Equatable)
+public macro Equatable() = #externalMacro(
+    module: "MacpluginsMacrosCore",
+    type: "EquatableMacro"
+)
+ 

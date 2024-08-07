@@ -16,6 +16,7 @@ import SwiftSyntaxMacros
 struct MacpluginsPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         BuildURLRequestMacro.self,
-        OSLoggerMacro.self
+        OSLoggerMacro.self,
+        EquatableMacro.self
     ]
 }

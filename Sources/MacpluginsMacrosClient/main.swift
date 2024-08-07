@@ -110,3 +110,17 @@ struct ExampleStruct {
 let example = ExampleStruct()
 
 example.example("subsystem message")
+
+// MARK: Equatable
+
+@Equatable
+struct SomeStruct {
+    let name: String
+}
+
+let one = SomeStruct(name: "one")
+let two = SomeStruct(name: "two")
+let anotherOne = SomeStruct(name: "one")
+
+print("equal: \(one == two)")
+print("equal: \(one == anotherOne)")

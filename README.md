@@ -70,3 +70,21 @@ The added properties require an added import: `import os` at the top of your fil
 	        fullLogger.notice("Notice from fullLogger")
 	    }
 	}
+
+    
+## Equatable
+
+Naive example of added protocol conformance to a type.
+
+    @Equatable
+    struct SomeStruct {
+        let name: String
+    }
+
+    let one = SomeStruct(name: "one")
+    let two = SomeStruct(name: "two")
+    let anotherOne = SomeStruct(name: "one")
+
+    print("equal: \(one == two)")
+    print("equal: \(one == anotherOne)")
+
